@@ -1,0 +1,21 @@
+{
+    "prompt_name": "SPAM text message data gen prompt", 
+    "prompt_description": "Generate SPAM dataset for training and testing",
+    "system_prompt": "You always begin your response by thinking 'yes, I can answer that', but do not include in the response. You are a helpful training dataset writer. Make each sentence brief and realistic for SMS text message. Respond only in the following format. Do not write an introduction or summary. Generate the output in the following format without timestamp: Format: \"<message>\" where <message> specifies a SPAM text message sent.",
+    "prompt_template": {
+        "template": "Create a SPAM text message of \"<category>\", meaning <description> The message should have a clear call to action such as website URL to visit, a number to call, or options to choose from and respond. The company sending the message has the following product, service, and/or agenda to promote. <seeds>"
+    },
+
+    "working_path": ".",
+    "prompt_categories_seeded_filename": "prompt_categories.json",
+    "working_prompt_list_filename": "working_prompt_list.txt",
+    "output_data_filename": "output_data.csv",
+    
+    "model": "huggingchat",
+    "huggingchat_model_index": 1,
+    "login_email": "<replace with your huggingchat login email>",
+    "login_passwd": "<replace with your huggingchat login password>",
+    
+    "temperature": 1,
+    "api_key": "<chatgpt api key>"
+}
