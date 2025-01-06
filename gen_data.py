@@ -1,14 +1,179 @@
-from langchain_community.chat_models import ChatOpenAI
-from langchain.schema import HumanMessage, SystemMessage
 from language_model import LanguageModel
-from util import select_prompt_config_file, load_json_file
+from util import select_prompt_config_file, load_json_file, configure_logger
 import csv
 import re
-import json
 import os
 import pandas as pd
 import sys
 import time
+import logging
+from tqdm import tqdm
+import hashlib
+import re
+
+def cache_prompt_response(log_filename):
+    """
+    Reads a log file, processes prompt, model_name, and response pairs, and returns a mapping of
+    MD5 hashes of prompts to their corresponding responses and model names.
+
+    Args:
+        log_filename (str): The path to the log file.
+
+    Returns:
+        dict: A mapping of MD5(prompt_str) to a dictionary with response and model_name.
+    """
+    hash_mapping = {}
+
+    # Define regex patterns for prompts, model names, responses, and timestamps
+    prompt_pattern = re.compile(r" - prompt: (.+)")
+    model_name_pattern = re.compile(r" - model_name: (.+)")
+    response_start_pattern = re.compile(r" - response: (.+)")
+    timestamp_pattern = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}")
+
+    current_prompt = None
+    current_response = None
+    current_model_name = "Unknown_model"
+    in_response = False
+
+    with open(log_filename, 'r', encoding='utf-8') as log_file:
+        for line in log_file:
+            # Check if the line matches a prompt
+            prompt_match = prompt_pattern.search(line)
+            if prompt_match:
+                current_prompt = prompt_match.group(1)
+                current_model_name = "Unknown_model"  # Reset model name for new prompt
+                in_response = False
+                current_response = None
+                continue
+
+            # Check if the line specifies a model_name
+            model_name_match = model_name_pattern.search(line)
+            if model_name_match:
+                current_model_name = model_name_match.group(1)
+                continue
+
+            # Check if the line starts a response
+            response_match = response_start_pattern.search(line)
+            if response_match:
+                current_response = response_match.group(1) + "\n"
+                in_response = True
+                continue
+
+            # If in response, continue capturing lines until the next timestamp
+            if in_response:
+                if timestamp_pattern.match(line):
+                    # Process the complete response
+                    if current_prompt and current_response:
+                        prompt_hash = hashlib.md5(current_prompt.encode('utf-8')).hexdigest()
+                        hash_mapping[prompt_hash] = {
+                            "response": current_response.strip(),
+                            "model_name": current_model_name
+                        }
+
+                    # Reset for the next sequence
+                    current_prompt = None
+                    current_response = None
+                    current_model_name = "Unknown_model"
+                    in_response = False
+                else:
+                    current_response += line
+
+    # Finalize any pending response at the end of the file
+    if current_prompt and current_response:
+        prompt_hash = hashlib.md5(current_prompt.encode('utf-8')).hexdigest()
+        hash_mapping[prompt_hash] = {
+            "response": current_response.strip(),
+            "model_name": current_model_name
+        }
+
+    return hash_mapping
+
+def old_cache_prompt_response(log_filename):
+    """
+    Reads a log file, processes prompt and response pairs, and returns a mapping of
+    MD5 hashes of prompts to their corresponding responses.
+
+    Args:
+        log_filename (str): The path to the log file.
+
+    Returns:
+        dict: A mapping of MD5(prompt_str) to response_str.
+    """
+    hash_mapping = {}
+
+    # Define regex patterns for prompts, responses, and timestamps
+    prompt_pattern = re.compile(r" - prompt: (.+)")
+    response_start_pattern = re.compile(r" - response: (.+)")
+    timestamp_pattern = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}")
+
+    current_prompt = None
+    current_response = None
+    in_response = False
+
+    with open(log_filename, 'r', encoding='utf-8') as log_file:
+        for line in log_file:
+            # Check if the line matches a prompt
+            prompt_match = prompt_pattern.search(line)
+            if prompt_match:
+                current_prompt = prompt_match.group(1)
+                in_response = False
+                current_response = None
+                continue
+
+            # Check if the line starts a response
+            response_match = response_start_pattern.search(line)
+            if response_match:
+                current_response = response_match.group(1) + "\n"
+                in_response = True
+                continue
+
+            # If in response, continue capturing lines until the next timestamp
+            if in_response:
+                if timestamp_pattern.match(line):
+                    # Process the complete response
+                    if current_prompt and current_response:
+                        prompt_hash = hashlib.md5(current_prompt.encode('utf-8')).hexdigest()
+                        hash_mapping[prompt_hash] = current_response
+
+                    # Reset for the next sequence
+                    current_prompt = None
+                    current_response = None
+                    in_response = False
+                else:
+                    current_response += line
+
+    # Finalize any pending response at the end of the file
+    if current_prompt and current_response:
+        prompt_hash = hashlib.md5(current_prompt.encode('utf-8')).hexdigest()
+        hash_mapping[prompt_hash] = current_response
+
+    return hash_mapping
+
+# Global variable to store the LanguageModel instance
+_global_language_model = None
+
+def get_language_model(model_name=None, api_key=None, system_prompt=None, 
+                       temperature=None, login_email=None, login_passwd=None, 
+                       huggingchat_model_index=None, progress_bar=None):
+    global _global_language_model
+    
+    # If model doesn't exist, create it
+    if _global_language_model is None:
+        # Require all parameters for first-time initialization
+        if all([model_name, api_key, system_prompt, temperature is not None, 
+                login_email, login_passwd, huggingchat_model_index is not None]):
+            _global_language_model = LanguageModel(
+                model_name, api_key, system_prompt, temperature, 
+                login_email, login_passwd, huggingchat_model_index, progress_bar
+            )
+        else:
+            raise ValueError("Must provide all parameters for first-time model initialization")
+    else:
+        # change the language model
+        _global_language_model.update_model(model_name, api_key, system_prompt, temperature,
+                                            login_email, login_passwd, huggingchat_model_index, progress_bar)
+
+    return _global_language_model
 
 def parse_input_file(file_path):
     """
@@ -43,13 +208,13 @@ def parse_input_file(file_path):
 
     return system_prompt, prompts_data
 
-def process_with_lang_model(model, prompts_data, input_file, output_file):
+def process_with_lang_model(model, prompts_data, output_file, prompt_response_type, prompt_response_array_constraint=None, prompt_response_cache={}):
     """
     Process prompts using LangChain and GPT-4-mini, saving results to CSV
     Only processes prompts not already in the output file
     Writes each response immediately to ensure partial results are saved
     """
-    model_name = model.get_current_model_name()
+    # model_name = model.get_current_model_name()
 
     # Read existing output file if it exists
     try:
@@ -63,16 +228,25 @@ def process_with_lang_model(model, prompts_data, input_file, output_file):
             writer.writerow(['Model', 'Label', 'Category', 'Chat', 'PromptIndex'])
 
     # Process each prompt
-    for label, category, prompt, prompt_index in prompts_data:
+    for label, category, prompt, prompt_index in tqdm(prompts_data, desc="Processing Prompts", unit="prompt"):
         # Skip if prompt_index already processed
         if prompt_index in processed_indices:
-            print(f"Skipping already processed prompt index: {prompt_index}")
+            logging.info(f"Skipping already processed prompt index: {prompt_index}")
+            # print(f"Skipping already processed prompt index: {prompt_index}")
             continue
 
         try:
+            # start a new conversation if requested            
+            marker = "#### START NEW CONVERSATION ####"
+            if marker in prompt:
+                prompt = prompt.replace(marker, "").strip()
+                model.create_new_conversation()
+
             # Get response
-            response = model.send_request(prompt)
-            
+            response_dict = model.send_request(prompt, prompt_response_type, prompt_response_array_constraint, prompt_response_cache)
+            response = response_dict.get("response", "Internal error: No response found")
+            model_name = response_dict.get("model_name", "Internal error: No model_name found")
+
             # Immediately write to CSV to preserve partial results
             with open(output_file, 'a', newline='', encoding="utf-8") as csvfile:
                 writer = csv.writer(csvfile)
@@ -87,14 +261,68 @@ def process_with_lang_model(model, prompts_data, input_file, output_file):
                 csvfile.flush()
                 os.fsync(csvfile.fileno())
             
-            print(f"Processed prompt index ({prompt_index}) for Label: {label}, Category: {category}")
+            logging.info(f"Processed prompt index ({prompt_index}) for Label: {label}, Category: {category}")
             
         except Exception as e:
-            print(f"Error processing prompt index ({prompt_index}) for Label: {label}, Category: {category}")
-            print(f"Error: {str(e)}")
+            logging.error(f"Error processing prompt index ({prompt_index}) for Label: {label}, Category: {category}")
+            logging.error(f"Error: {str(e)}")
             if 'too many messages' in str(e) and 'Try again later' in str(e):
-                print("Sleeping 5 mins due to rate limit detection")
+                logging.info("Sleeping 5 mins due to rate limit detection")
                 time.sleep(300)  # Sleep for 390 seconds, which is 5 minutes
+
+def gen_data(model_name, api_key, temperature, login_email, login_passwd, 
+             huggingchat_model_index, input_file, output_file, prompt_response_type = "string", prompt_response_array_constraint = None,
+             log_file = "gen_data_log.txt", log_level_str = "INFO"):    
+    # Create a tqdm object with a total of 100 iterations
+    pbar = tqdm(total=100, desc="Setting up gen_data - building cache")
+
+    # cache the previous prompt responses
+    prompt_response_cache = {}
+    if os.path.exists(log_file):
+        prompt_response_cache = cache_prompt_response(log_file)
+
+    # Configure logging
+    configure_logger(log_file, log_level_str)
+    pbar.update(10)
+    pbar.set_description("Setting up gen_data - parsing input_file")
+
+    try:
+        # Parse input file
+        system_prompt, prompts_data = parse_input_file(input_file)
+        logging.debug(f"system_prompt = {system_prompt}")
+        #print(f"system_prompt = {system_prompt}")
+
+        pbar.update(20)
+        pbar.set_description("Setting up gen_data - lang model setup")
+
+        # Get or create the global LanguageModel instance
+        model = get_language_model(
+            model_name=model_name, 
+            api_key=api_key, 
+            system_prompt=system_prompt, 
+            temperature=temperature, 
+            login_email=login_email, 
+            login_passwd=login_passwd, 
+            huggingchat_model_index=huggingchat_model_index,
+            progress_bar=pbar
+        )
+        # model = LanguageModel(model_name, api_key, system_prompt, temperature, login_email, login_passwd, huggingchat_model_index)
+
+        pbar.update(30)
+        pbar.set_description("Setting up gen_data - completed")
+
+        pbar.close()
+
+        # Process with LanguageModel
+        process_with_lang_model(model, prompts_data, output_file, prompt_response_type, prompt_response_array_constraint, prompt_response_cache)
+        
+        logging.info(f"Processing complete. Results saved to {output_file}")
+        # print(f"Processing complete. Results saved to {output_file}")
+        
+    except Exception as e:
+        logging.error(f"An error occurred: {str(e)}")
+        # print(f"An error occurred: {str(e)}")
+
 
 def main():
     # Get filename from command line argument if provided
@@ -137,20 +365,7 @@ def main():
     MODEL = model_name
     API_KEY = api_key
     
-    try:
-        # Parse input file
-        system_prompt, prompts_data = parse_input_file(INPUT_FILE)
-        print(f"system_prompt = {system_prompt}")
-
-        model = LanguageModel(MODEL, API_KEY, system_prompt, temperature, login_email, login_passwd, huggingchat_model_index)
-
-        # Process with LanguageModel
-        process_with_lang_model(model, prompts_data, INPUT_FILE, OUTPUT_FILE)
-        
-        print(f"Processing complete. Results saved to {OUTPUT_FILE}")
-        
-    except Exception as e:
-        print(f"An error occurred: {str(e)}")
+    gen_data(MODEL, API_KEY, temperature, login_email, login_passwd, huggingchat_model_index, INPUT_FILE, OUTPUT_FILE)
 
 if __name__ == "__main__":
     main()

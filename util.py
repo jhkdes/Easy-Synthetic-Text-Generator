@@ -1,6 +1,35 @@
 import os
 import sys
 import json
+import logging
+
+def configure_logger(log_filename, log_level_str="INFO"):
+    """
+    Configures a logger to write logs to a specified file with a given log level.
+
+    Args:
+        log_filename (str): The name of the log file.
+        log_level (int): The logging level (e.g., logging.DEBUG, logging.INFO).
+    """
+    # Map the string log level to the corresponding logging constant
+    log_level = getattr(logging, log_level_str.upper(), logging.INFO)
+
+    # Create a logger
+    logging.basicConfig(encoding="utf-8")
+    logger = logging.getLogger()
+    logger.setLevel(log_level)  # Set the logging level
+
+    # File handler
+    file_handler = logging.FileHandler(log_filename, encoding="utf-8")
+    file_handler.setLevel(log_level)
+    file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+
+    # Clear existing handlers to avoid duplicate logs
+    if logger.hasHandlers():
+        logger.handlers.clear()
+
+    # Add handlers
+    logger.addHandler(file_handler)
 
 def load_json_file(prompt_categories_json):
     with open(prompt_categories_json, 'r', encoding='utf-8') as f:
@@ -32,7 +61,7 @@ def select_prompt_config_file(initial_filename=None):
         prompt_configs.extend([
             os.path.join(root, file) 
             for file in files 
-            if file.startswith('prompt_config') and file.endswith('.json')
+            if file.startswith('estgen_config') and file.endswith('.json')
         ])
     
     # If no files found

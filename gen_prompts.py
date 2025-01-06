@@ -23,7 +23,8 @@ def find_expansion_keys(prompt_template: Dict) -> List[str]:
 
 def generate_prompts(prompt_categories: List[Dict], 
                      prompt_expansions: Dict, 
-                     prompt_template: Dict) -> List[str]:
+                     prompt_template: Dict,
+                     prompt_repeat: int) -> List[str]:
     """
     Generate prompts based on the input parameters.
     
@@ -42,14 +43,16 @@ def generate_prompts(prompt_categories: List[Dict],
     base_prompts = []
     for category_info in prompt_categories:
         seeds = category_info.get('seeds', None)
-        if seeds and '<seeds>' in prompt_template['template'] :  # If seeds exist in prompt_config AND <seeds> is contained in the template, replace <seeds>
+        if seeds and '<seeds>' in prompt_template:  # If seeds exist in prompt_config AND <seeds> is contained in the template, replace <seeds>
             for seed in seeds:
-                current_prompt = prompt_template['template'].replace('<category>', category_info['category'])
+                current_prompt = prompt_template.replace('<label>', category_info['label'])
+                current_prompt = current_prompt.replace('<category>', category_info['category'])
                 current_prompt = current_prompt.replace('<description>', category_info['description'])
                 current_prompt = current_prompt.replace('<seeds>', seed)
                 base_prompts.append(current_prompt)
         else:  # If seeds are missing, do not replace <seeds>
-            current_prompt = prompt_template['template'].replace('<category>', category_info['category'])
+            current_prompt = prompt_template.replace('<label>', category_info['label'])
+            current_prompt = current_prompt.replace('<category>', category_info['category'])
             current_prompt = current_prompt.replace('<description>', category_info['description'])
             base_prompts.append(current_prompt)
     
@@ -59,7 +62,6 @@ def generate_prompts(prompt_categories: List[Dict],
         # Get expansion options for each key
         # expansion_options = [prompt_expansions[key] for key in expansion_keys]
         expansion_options = [prompt_expansions[key] for key in expansion_keys if key in prompt_expansions] if prompt_expansions else []
-
         
         # Create all possible combinations
         for combination in itertools.product(*expansion_options):
@@ -67,8 +69,13 @@ def generate_prompts(prompt_categories: List[Dict],
             # Replace each expansion token with its value
             for key, value in zip(expansion_keys, combination):
                 current_prompt = current_prompt.replace(f'<*{key}*>', str(value))
-            final_prompts.append(current_prompt)
-    
+            for i in range(prompt_repeat):
+                if i == 0 and prompt_repeat > 1:
+                    # Prepend the tag for the first repeated prompt
+                    final_prompts.append(f"#### START NEW CONVERSATION #### {current_prompt}")
+                else:
+                    final_prompts.append(current_prompt)
+
     return final_prompts
 
 def output_prompts(prompts: List[str], prompt_categories: List[Dict], sys_prompt: str, output_file: str):
@@ -100,6 +107,19 @@ def output_prompts(prompts: List[str], prompt_categories: List[Dict], sys_prompt
     
     print(f"Prompts have been written to {output_file}")
 
+def gen_prompts(prompt_expansions: Dict, 
+                prompt_template: Dict,
+                system_prompt: str, 
+                input_file: str,
+                output_file: str,
+                prompt_repeat: int):
+    # read in prompt_categories file
+    prompt_categories = load_json_file(input_file)
+
+    # Generate and output prompts
+    generated_prompts = generate_prompts(prompt_categories["categories"], prompt_expansions, prompt_template, prompt_repeat)
+    output_prompts(generated_prompts, prompt_categories["categories"], system_prompt, output_file) 
+
 def main():
     # Get filename from command line argument if provided
     prompt_config_filename = sys.argv[1] if len(sys.argv) > 1 else None
@@ -119,12 +139,8 @@ def main():
     working_prompt_list_filename = prompt_config_json.get("working_prompt_list_filename") or "working_prompt_list.txt"
     working_prompt_list_filename_fullpath = os.path.join(working_path, working_prompt_list_filename)
 
-    # read in prompt_categories file
-    prompt_categories = load_json_file(prompt_categories_seeded_filename_fullpath)
-
     # Generate and output prompts
-    generated_prompts = generate_prompts(prompt_categories["categories"], prompt_expansions, prompt_template)
-    output_prompts(generated_prompts, prompt_categories["categories"], system_prompt, working_prompt_list_filename_fullpath)
+    gen_prompts(prompt_expansions, prompt_template, system_prompt, prompt_categories_seeded_filename_fullpath, working_prompt_list_filename_fullpath, 1)
 
 if __name__ == "__main__":
     main()

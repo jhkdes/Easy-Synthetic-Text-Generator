@@ -1,141 +1,49 @@
 {
     "categories": [
       {
-        "label": "SPAM",
-        "category": "SPAM - Alcohol",
-        "description": "Promotes alcoholic drinks with urgency and clear call to action to respond to the message or visit a website to make a purchase.",
-        "seeds": [
-          "The company is promoting a limited-edition wine at a 50% discount for Valentine's Day celebrations.",
-          "A craft brewery is offering free samples of their new seasonal ale for customers who sign up for a subscription service.",
-          "The company advertises a virtual cocktail-making class featuring its premium liquors, available with a promotional discount code.",
-          "A liquor brand is launching a holiday gift pack with exclusive packaging and offers free delivery for orders placed before midnight.",
-          "An online retailer markets an 'end-of-summer sale' on beach-friendly canned cocktails.",
-          "The company invites recipients to join a loyalty program that provides discounts on every beer purchase.",
-          "A spirits manufacturer promotes its new low-calorie vodka in a campaign targeting fitness enthusiasts.",
-          "An event organizer advertises an exclusive tasting session for premium whiskeys with tickets discounted for early birds.",
-          "A popular cider brand announces a flash sale on bulk purchases for upcoming sports events.",
-          "A new hard seltzer brand runs a giveaway campaign, enticing recipients to share a referral code for free samples."
-        ]
+        "label": "Depression",
+        "category": "Anhedonia",
+        "description": "As a patient, I have little interest or pleasure in doing things."
       },
       {
-        "label": "SPAM",
-        "category": "SPAM - Tobacco",
-        "description": "Encourages the purchase or use of tobacco products, often targeting youth with enticing offers or discounts.",
-        "seeds": [
-          "A tobacco company promotes its new fruit-flavored e-cigarettes through a 'try-it-free' campaign.",
-          "A retailer advertises a flash sale on limited-edition cigarette packs with custom designs.",
-          "An e-cigarette brand highlights a 'starter kit' with significant discounts for first-time buyers.",
-          "A tobacco brand promotes a loyalty program with points redeemable for exclusive merchandise.",
-          "The company runs a holiday campaign offering buy-one-get-one-free on all cigarette cartons.",
-          "An online seller advertises discreet shipping for bulk orders of vaping products.",
-          "A tobacco brand sponsors a virtual concert and promotes special discounts for attendees.",
-          "A retailer targets smokers with an 'upgrade your vape' campaign offering discounts on new devices.",
-          "The company promotes a sweepstakes with a grand prize of a luxury vacation for those purchasing tobacco products.",
-          "A hookah brand markets discounted starter kits to encourage adoption of its products."
-        ]
+        "label": "Depression",
+        "category": "Mood",
+        "description": "As a patient, I feel down, depressed and hopeless."
       },
       {
-        "label": "SPAM",
-        "category": "SPAM - Cannabis",
-        "description": "Advertises cannabis or related products, highlighting offers, discounts, or promotions to drive sales.",
-        "seeds": [
-          "A dispensary promotes a new line of CBD gummies with a 20% discount for first-time buyers.",
-          "A cannabis company runs a 'Green Friday' sale offering steep discounts on popular products.",
-          "A brand advertises a subscription box featuring a curated selection of cannabis products.",
-          "A dispensary markets limited-edition pre-rolls with free delivery for orders placed within the week.",
-          "An edibles company introduces a new product with a campaign featuring free samples.",
-          "The company promotes a bundle deal on CBD oils with additional discounts for bulk orders.",
-          "A brand highlights a loyalty program where every purchase earns points redeemable for products.",
-          "A retailer announces a one-day flash sale on vapes and concentrates.",
-          "A cannabis company sponsors a music festival, promoting exclusive discounts for attendees.",
-          "A dispensary markets a 'refer-a-friend' campaign offering discounts for both the referrer and the referred."
-        ]
+        "label": "Depression",
+        "category": "Sleep",
+        "description": "As a patient, I have trouble falling or staying asleep, or sleeping too much."
       },
       {
-        "label": "SPAM",
-        "category": "SPAM - Viagra",
-        "description": "Promotes Viagra or similar medications, often with false claims or promises of enhanced performance.",
-        "seeds": [
-          "The company claims a limited-time offer on generic Viagra with discreet shipping options.",
-          "A retailer promotes a 'first-pill-free' campaign to attract new customers to its medication subscription plan.",
-          "The company highlights a money-back guarantee for buyers of its new male enhancement supplements.",
-          "A pharmacy advertises deep discounts on bulk orders of erectile dysfunction medications.",
-          "The company runs a Valentine’s Day special, encouraging buyers to 'enhance their romantic evenings.'",
-          "A brand claims FDA approval for a new over-the-counter alternative to Viagra, available at a discount.",
-          "The company promotes a subscription service that delivers monthly supplies of performance-enhancing pills.",
-          "A retailer targets customers with a 'no prescription needed' campaign for online orders.",
-          "The company offers a referral bonus for customers who recommend its products to friends.",
-          "A website markets a trial offer, providing free samples of male enhancement pills."
-        ]
+        "label": "Depression",
+        "category": "Fatigue",
+        "description": "As a patient, I feel tired and have little energy."
       },
       {
-        "label": "SPAM",
-        "category": "SPAM - Gambling",
-        "description": "Encourages participation in gambling activities such as online casinos, lotteries, or betting with promises of high rewards.",
-        "seeds": [
-          "An online casino offers a 'no deposit bonus' for first-time players to try their luck.",
-          "A betting app promotes free bets for new users who sign up within the next 24 hours.",
-          "The company runs a campaign highlighting a jackpot prize in an upcoming virtual slot tournament.",
-          "A lottery site claims guaranteed wins for participants in its exclusive membership program.",
-          "An online poker platform markets a free-entry tournament with real cash prizes.",
-          "A casino advertises a cashback program for losses incurred during promotional periods.",
-          "The company promotes a 'refer-a-friend' campaign with bonuses for both the referrer and the referred.",
-          "An app markets live sports betting with enhanced odds for the next big game.",
-          "A bingo website offers new players 50 free spins on signing up.",
-          "An online casino runs a 'flash sale' on token packages with a chance to win exclusive prizes."
-        ]
+        "label": "Depression",
+        "category": "Eating",
+        "description": "As a patient, I have poor appetite, or eat too much."
       },
       {
-        "label": "SPAM",
-        "category": "SPAM - Unhealthy Food",
-        "description": "Markets sugary, fatty, or high-calorie foods with promotional tactics aimed at encouraging unhealthy consumption.",
-        "seeds": [
-          "A fast-food chain advertises a limited-time offer on its new triple-layer cheeseburger meal.",
-          "A candy company promotes a 'buy one, get one free' deal on large chocolate boxes.",
-          "A donut shop runs a 'free donut with every coffee' campaign to attract morning customers.",
-          "A snack brand highlights its new range of flavored chips with free samples for first-time buyers.",
-          "An ice cream company offers discounts on bulk purchases for upcoming summer events.",
-          "The company promotes a loyalty program that provides free items after every five purchases.",
-          "A fast-food chain markets a late-night menu with reduced prices for online orders.",
-          "A pizza delivery service runs a 'family feast' deal with extra sides included for free.",
-          "The company advertises a dessert giveaway for customers who spend a minimum amount.",
-          "A soda brand runs a promotional campaign offering free merchandise with large pack purchases."
-        ]
+        "label": "Depression",
+        "category": "Self-esteem",
+        "description": "As a patient, I feel bad about myself or think of myself as a failure, or have let myself or my family down."
       },
       {
-        "label": "SPAM",
-        "category": "SPAM - Financial Product",
-        "description": "Promotes financial products such as loan approvals, debt relief, or student loan forgiveness with quick-response incentives.",
-        "seeds": [
-          "A company claims pre-approved student loan forgiveness for eligible applicants who respond promptly.",
-          "A payday loan provider advertises instant cash disbursement with no credit check required.",
-          "The company markets a zero-interest credit card offer for applicants who sign up within 24 hours.",
-          "A debt consolidation service highlights reduced monthly payments through a limited-time program.",
-          "The company promotes mortgage refinancing options with historically low interest rates.",
-          "A lender advertises a personal loan approval process completed in less than 10 minutes.",
-          "The company runs a referral campaign offering cash rewards for recommending its financial products.",
-          "An investment firm markets a 'get rich quick' scheme promising high returns within weeks.",
-          "A tax service highlights guaranteed maximum refunds for early filers.",
-          "A retirement planning company promotes a free consultation for those signing up before the deadline."
-        ]
+        "label": "Depression",
+        "category": "Concentration",
+        "description": "As a patient, I have trouble concentrating on things such as reading the newspaper or watching television."
       },
       {
-        "label": "SPAM",
-        "category": "SPAM - Sweepstakes",
-        "description": "Notifies of winning or solicits participation in sweepstakes, often with unrealistic claims or urgency to respond.",
-        "seeds": [
-          "A company claims the recipient has won a luxury car and must respond within 24 hours to claim it.",
-          "An online retailer promotes a sweepstakes where participants can win a year’s worth of groceries.",
-          "A travel agency markets a contest offering a free vacation for entries submitted before the end of the day.",
-          "The company advertises a chance to win a cash prize by signing up for its newsletter.",
-          "An electronics store promotes a giveaway for the latest smartphone model with every purchase.",
-          "A fashion brand runs a sweepstakes offering a wardrobe makeover for lucky winners.",
-          "A subscription service markets an exclusive contest for members with high-value rewards.",
-          "The company announces a flash giveaway of gift cards for completing a short survey.",
-          "A tech company promotes a chance to win a gaming console by liking and sharing its social media posts.",
-          "A food delivery app markets a sweepstakes offering free meals for a year to lucky participants."
-        ]
+        "label": "Depression",
+        "category": "Psychomotor",
+        "description": "As a patient, I move and speak so slowly that other people could have noticed. Or the opposite, being so fidgety or restless that I move around a lot more than usual."
+      },
+      {
+        "label": "Depression",
+        "category": "Self-harm",
+        "description": "As a patient, I think that I would be better off dead, and thought of hurting myself."
       }
     ]
   }
-  

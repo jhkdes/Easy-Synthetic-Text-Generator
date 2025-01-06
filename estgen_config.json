@@ -1,0 +1,141 @@
+{
+    "version": "0.1.0",
+    "working_path": ".",
+
+    "model": "huggingchat",
+    "huggingchat_model_index": 1,
+    "login_email": "<huggingchat_login_email>",
+    "login_passwd": "<huggingchat_login_passwd>",
+    
+    "temperature": 1,
+    "api_key": "<gpt_api_key>",
+
+    "steps": [
+        {
+            "script": "gen_prompts",
+            "description": "Create prompts to generate depression scenarios",
+            "prompt_categories_filename": "prompt_categories.json",
+            "output_filename": "working_scenario_prompts.txt",
+            "system_prompt": "You always begin your response by thinking 'yes, I can answer that', but do not include in the response. You are a creative and descriptive scenario writer.",
+            "prompt_template": "As a creative writer, come up with 2 distinct scenarios, different from the scenarios generated so far. Each scenario must be at least 3-sentence long. Be creative and descriptive. Each scenario should trigger depression on teenager A. Depression symptom is \"<category>\" where <description> Generate the output in a valid JSON format, following the example FORMAT. Do not generate introduction or summary. FORMAT: { \"label\": \"<label>\", \"category\": \"<category>\", \"description\": \"<description>\", \"seeds\": [ \"<scenario_1>\", \"<scenario_2>\", ... ] } where each scenario is described in third person perspective describing the teenager A's depression triggers.",
+            "prompt_repeat": 10
+        },
+        {
+            "script": "gen_data",
+            "description": "Generate scenarios to use them to create seeded conversation prompts",
+            "working_prompt_list_filename": "working_scenario_prompts.txt",
+            "output_filename": "scenarios.csv",
+            "log_filename": "gen_data_scenario_log.txt",
+            "log_level": "DEBUG",
+            "prompt_response_type": "json",
+            "prompt_response_array_constraint": "seeds,2",
+            "model": "gpt-4o-mini"
+        },
+        {
+            "script": "convert_to_prompt_categories.py",
+            "description": "Convert scenarios to category seeds in JSON format",
+            "input_filename": "scenarios.csv",
+            "output_filename": "prompt_categories_seeded.json"
+        },
+        {
+            "script": "gen_prompts",
+            "description": "Create prompts to generate text conversation showing signs of depression ",
+            "prompt_categories_filename": "prompt_categories_seeded.json",
+            "output_filename": "working_text_prompts.txt",
+            "system_prompt": "You always begin your response by thinking 'yes, I can answer that', but do not include in the response. You are a helpful training dataset writer. Make each sentence brief and realistic for SMS text message.",
+            "prompt_template": "Context where the messaging is happening is the following. Teenager A is suffering from a depression symptom. Teenager A is exchanging texts with a friend B. <seeds> ##### Instruction: Create a text message chat containing 5 text messages. Chat must be an example of \"<category>\" scenario, meaning <description> Ensure friend B's response is different from earlier chats. Respond only in a valid JSON, following the OUTPUT FORMAT. Do not write an introduction or summary. ##### OUTPUT FORMAT: { \"chat\": [ {\"sender\": \"<sender>\", \"msg\": \"<message>\"}, {\"sender\": \"<sender>\", \"msg\": \"<message>\"}, ... ] }\" where <sender> is the message sender as A or B or C, and <message> is each message sent."
+        },
+        {
+            "script": "gen_data",
+            "description": "Generate text conversations to use them to create labeled training dataset",
+            "working_prompt_list_filename": "working_text_prompts.txt",
+            "output_filename": "texts.csv",
+            "log_filename": "gen_data_text_log.txt",
+            "log_level": "INFO",
+            "prompt_response_type": "json",
+            "prompt_response_array_constraint": "chat,5",
+            "model": "huggingchat",
+            "huggingchat_model_index": 1
+        },
+        {
+            "script": "convert_chat_json_to_string.py",
+            "description": "Convert an input CSV file with 'Chat' as JSON to strings",
+            "input_filename": "texts.csv",
+            "output_filename": "texts_messages.csv"
+        },
+        {
+            "script": "filter_data.py",
+            "description": "Filter text conversations by cosine similarity threshold",
+            "threshold": 0.7,
+            "input_filename": "texts_messages.csv",
+            "output_filename": "texts_messages_filtered.csv",
+            "log_filename": "filter_data_log.txt",
+            "log_level": "INFO"
+        },
+        {
+            "script": "copy_file.py",
+            "description": "Copies a file to another file so that output_file is not overwritten and can be resumed",
+            "input_filename": "texts_messages_filtered.csv",
+            "output_filename": "texts_messages_regen.csv"
+        },
+        {
+            "script": "gen_data",
+            "description": "Generate additional text conversations to make up for filtered out texts",
+            "working_prompt_list_filename": "working_text_prompts.txt",
+            "output_filename": "texts_messages_regen.csv",
+            "log_filename": "gen_data_text_log-2.txt",
+            "log_level": "INFO",
+            "prompt_response_type": "json",
+            "prompt_response_array_constraint": "chat,5",
+            "model": "huggingchat",
+            "huggingchat_model_index": 2
+        },
+        {
+            "script": "convert_chat_json_to_string.py",
+            "description": "Convert an input CSV file with 'Chat' as JSON to strings",
+            "input_filename": "texts_messages_regen.csv",
+            "output_filename": "texts_messages_regen_messages.csv"
+        },
+        {
+            "script": "filter_data.py",
+            "description": "Filter text conversations by cosine similarity threshold",
+            "threshold": 0.7,
+            "input_filename": "texts_messages_regen_messages.csv",
+            "output_filename": "texts_messages_regen_messages_filtered.csv",
+            "log_filename": "filter_data_log-2.txt",
+            "log_level": "INFO"
+        },
+        {
+            "script": "copy_file.py",
+            "description": "Copies a file to another file so that output_file is not overwritten and can be resumed",
+            "input_filename": "texts_messages_regen_messages_filtered.csv",
+            "output_filename": "texts_messages_regen_2.csv"
+        },
+        {
+            "script": "gen_data",
+            "description": "Generate additional text conversations to make up for filtered out texts",
+            "working_prompt_list_filename": "working_text_prompts.txt",
+            "output_filename": "texts_messages_regen_2.csv",
+            "log_filename": "gen_data_text_log-3.txt",
+            "log_level": "INFO",
+            "prompt_response_type": "json",
+            "prompt_response_array_constraint": "chat,5",
+            "model": "gpt-4o-mini"
+        },
+        {
+            "script": "convert_chat_json_to_string.py",
+            "description": "Convert an input CSV file with 'Chat' as JSON to strings",
+            "input_filename": "texts_messages_regen_2.csv",
+            "output_filename": "texts_messages_regen_2_messages.csv"
+        },
+        {
+            "script": "filter_data.py",
+            "description": "Filter text conversations by cosine similarity threshold",
+            "threshold": 0.7,
+            "input_filename": "texts_messages_regen_2_messages.csv",
+            "output_filename": "texts_messages_regen_2_messages_filtered.csv",
+            "log_filename": "filter_data_log-3.txt",
+            "log_level": "INFO"
+        }
+    ]
+}
