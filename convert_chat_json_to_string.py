@@ -7,6 +7,9 @@ def convert_chat_column(input_file, output_file):
     """
     Reads an input CSV file, processes the "Chat" column by converting JSON chat objects
     into concatenated sender-message strings, and writes the output to a new CSV file.
+
+    If JSON does not contain "sender" and "msg" skip the row as it does not follow the valid output format.
+    If it's not a JSON, output as is because they include previously converted rows showing messages in text format.
     """
     with open(input_file, mode='r', newline='', encoding='utf-8') as infile, \
          open(output_file, mode='w', newline='', encoding='utf-8') as outfile:
@@ -25,7 +28,12 @@ def convert_chat_column(input_file, output_file):
                     # Process the chat data if it contains the expected structure
                     if isinstance(chat_data, dict) and 'chat' in chat_data:
                         chat_entries = chat_data['chat']
-                        row['Chat'] = "\n".join(f"{entry['sender']}: {entry['msg']}" for entry in chat_entries)
+                        # row['Chat'] = "\n".join(f"{entry['sender']}: {entry['msg']}" for entry in chat_entries)
+                        if all('sender' in entry and 'msg' in entry for entry in chat_entries):
+                            row['Chat'] = "\n".join(f"{entry['sender']}: {entry['msg']}" for entry in chat_entries)
+                        else:
+                            continue  # Skip rows with invalid chat structure
+
                 except (json.JSONDecodeError, KeyError, TypeError):
                     # Keep the Chat column unchanged if parsing fails
                     pass
