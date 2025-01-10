@@ -88,67 +88,6 @@ def cache_prompt_response(log_filename):
 
     return hash_mapping
 
-def old_cache_prompt_response(log_filename):
-    """
-    Reads a log file, processes prompt and response pairs, and returns a mapping of
-    MD5 hashes of prompts to their corresponding responses.
-
-    Args:
-        log_filename (str): The path to the log file.
-
-    Returns:
-        dict: A mapping of MD5(prompt_str) to response_str.
-    """
-    hash_mapping = {}
-
-    # Define regex patterns for prompts, responses, and timestamps
-    prompt_pattern = re.compile(r" - prompt: (.+)")
-    response_start_pattern = re.compile(r" - response: (.+)")
-    timestamp_pattern = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}")
-
-    current_prompt = None
-    current_response = None
-    in_response = False
-
-    with open(log_filename, 'r', encoding='utf-8') as log_file:
-        for line in log_file:
-            # Check if the line matches a prompt
-            prompt_match = prompt_pattern.search(line)
-            if prompt_match:
-                current_prompt = prompt_match.group(1)
-                in_response = False
-                current_response = None
-                continue
-
-            # Check if the line starts a response
-            response_match = response_start_pattern.search(line)
-            if response_match:
-                current_response = response_match.group(1) + "\n"
-                in_response = True
-                continue
-
-            # If in response, continue capturing lines until the next timestamp
-            if in_response:
-                if timestamp_pattern.match(line):
-                    # Process the complete response
-                    if current_prompt and current_response:
-                        prompt_hash = hashlib.md5(current_prompt.encode('utf-8')).hexdigest()
-                        hash_mapping[prompt_hash] = current_response
-
-                    # Reset for the next sequence
-                    current_prompt = None
-                    current_response = None
-                    in_response = False
-                else:
-                    current_response += line
-
-    # Finalize any pending response at the end of the file
-    if current_prompt and current_response:
-        prompt_hash = hashlib.md5(current_prompt.encode('utf-8')).hexdigest()
-        hash_mapping[prompt_hash] = current_response
-
-    return hash_mapping
-
 # Global variable to store the LanguageModel instance
 _global_language_model = None
 

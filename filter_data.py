@@ -219,23 +219,6 @@ def filter_data(input_file, similarity_threshold, output_file):
 
     pbar.close()
 
-def main_old():
-    # Get filename from command line argument if provided
-    prompt_config_filename = sys.argv[1] if len(sys.argv) > 1 else None
-    
-    # Select and print the selected file
-    prompt_config_filename = select_prompt_config_file(prompt_config_filename)
-    print(f"Selected prompt config file: {prompt_config_filename}")
-
-    # read in prompt_config
-    prompt_config_json = load_json_file(prompt_config_filename)
-    working_path = prompt_config_json.get("working_path") or "."
-    output_data_filename = prompt_config_json.get("output_data_filename") or "output_data.csv"
-    output_data_filename_fullpath = os.path.join(working_path, output_data_filename)
-    output_file = f"{output_data_filename_fullpath}.filtered.csv"
-
-    filter_data(output_data_filename_fullpath, 0.7, output_file)
-
 def main():
     """
     Main function to parse arguments and run the filtering process.
